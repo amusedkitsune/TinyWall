@@ -6,8 +6,8 @@ namespace pylorak.Windows.WFP.Interop
     [StructLayout(LayoutKind.Sequential)]
     public struct FWPM_DISPLAY_DATA0
     {
-        [MarshalAs(UnmanagedType.LPWStr)] public string name;
-        [MarshalAs(UnmanagedType.LPWStr)] public string description;
+        [MarshalAs(UnmanagedType.LPWStr)] public string? name;
+        [MarshalAs(UnmanagedType.LPWStr)] public string? description;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -106,7 +106,7 @@ namespace pylorak.Windows.WFP.Interop
 
         public override readonly string ToString()
         {
-            return displayData.description;
+            return displayData.description ?? providerKey.ToString();
         }
     }
 

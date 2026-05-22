@@ -28,13 +28,13 @@ namespace pylorak.Windows.WFP
             }
         }
 
-        public string Name
+        public string? Name
         {
             get { return _nativeStruct.displayData.name; }
             set { _nativeStruct.displayData.name = value; }
         }
 
-        public string Description
+        public string? Description
         {
             get { return _nativeStruct.displayData.description; }
             set { _nativeStruct.displayData.description = value; }
@@ -93,7 +93,7 @@ namespace pylorak.Windows.WFP
 
         public override string ToString()
         {
-            return _nativeStruct.displayData.name;
+            return _nativeStruct.displayData.name ?? string.Empty;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace pylorak.Windows.WFP
@@ -31,7 +32,7 @@ namespace pylorak.Windows.WFP
         private Guid _providerKey;
         private readonly SafeHGlobalHandle _weightAndProviderKeyHandle;
 
-        private string? _displayName;
+        private string _displayName;
         private string? _displayDescription;
         private SafeHGlobalHandle? _displayDataHandle;
 
@@ -41,15 +42,19 @@ namespace pylorak.Windows.WFP
         private Filter(FilterConditionList conditions)
         {
             _conditions = conditions;
+            _displayName = string.Empty;
             _weightAndProviderKeyHandle = SafeHGlobalHandle.Alloc(sizeof(ulong) + Marshal.SizeOf<Guid>());
             _nativeStruct.weight.type = Interop.FWP_DATA_TYPE.FWP_UINT64;
             _nativeStruct.weight.value.uint64 = _weightAndProviderKeyHandle.DangerousGetHandle();
             _nativeStruct.providerKey = _weightAndProviderKeyHandle.DangerousGetHandle() + sizeof(ulong);
         }
 
-        public Filter(string? name, string? desc, Guid providerKey, FilterActions action, ulong weight, FilterConditionList? conditions = null)
+        public Filter(string name, string? desc, Guid providerKey, FilterActions action, ulong weight, FilterConditionList? conditions = null)
             : this((conditions is null) ? new FilterConditionList() : conditions)
         {
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentException("A filter name is required.", name);
+
             this.DisplayName = name;
             this.DisplayDescription = desc;
             this.ProviderKey = providerKey;
@@ -70,6 +75,10 @@ namespace pylorak.Windows.WFP
 
             if (_nativeStruct.displayData.name != IntPtr.Zero)
                 DisplayName = Marshal.PtrToStringUni(_nativeStruct.displayData.name);
+            else
+                // A filter name is required so we should never get here in theory,
+                // but just in case we do at least turn it into a non-null.
+                DisplayName = string.Empty;
 
             if (_nativeStruct.displayData.description != IntPtr.Zero)
                 DisplayDescription = Marshal.PtrToStringUni(_nativeStruct.displayData.description);
@@ -124,11 +133,13 @@ namespace pylorak.Windows.WFP
 
         private void SynchronizeDisplayData()
         {
+            Debug.Assert(_displayName is not null);
+
             if (_displayDataHandle != null)
                 // Already synchronized
                 return;
 
-            int nameLength = _displayName?.Length ?? 0;
+            int nameLength = _displayName!.Length;
             int nameSize = nameLength * 2;
             int descriptionLength = _displayDescription?.Length ?? 0;
             int descriptionSize = descriptionLength * 2;
@@ -136,7 +147,7 @@ namespace pylorak.Windows.WFP
             _displayDataHandle = SafeHGlobalHandle.Alloc(unmanagedSize);
 
             IntPtr namePtr = _displayDataHandle.DangerousGetHandle();
-            IntPtr descriptionPtr = namePtr + nameSize + 2;
+            IntPtr descriptionPtr = (_displayDescription is null) ? IntPtr.Zero : namePtr + nameSize + 2;
             unsafe
             {
                 var dst = (char*)namePtr;
@@ -144,17 +155,20 @@ namespace pylorak.Windows.WFP
                 fixed (char* src = _displayName)
                     Buffer.MemoryCopy(src, dst, nameSize, nameSize);
 
-                dst = (char*)descriptionPtr;
-                dst[descriptionLength] = (char)0;
-                fixed (char* src = _displayDescription)
-                    Buffer.MemoryCopy(src, dst, descriptionSize, descriptionSize);
+                if (descriptionPtr != IntPtr.Zero)
+                {
+                    dst = (char*)descriptionPtr;
+                    dst[descriptionLength] = (char)0;
+                    fixed (char* src = _displayDescription)
+                        Buffer.MemoryCopy(src, dst, descriptionSize, descriptionSize);
+                }
             }
 
-            _nativeStruct.displayData.name = (nameLength == 0) ? IntPtr.Zero : namePtr;
-            _nativeStruct.displayData.description = (descriptionLength == 0) ? IntPtr.Zero : descriptionPtr;
+            _nativeStruct.displayData.name = namePtr;
+            _nativeStruct.displayData.description = descriptionPtr;
         }
 
-        public string? DisplayName
+        public string DisplayName
         {
             get
             {
