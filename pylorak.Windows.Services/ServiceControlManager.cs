@@ -155,12 +155,14 @@ namespace pylorak.Windows.Services
             using var failureActionsPtr = SafeHGlobalHandle.FromManagedStruct(failureActions);
 
             // Make the change
-            int changeResult = NativeMethods.ChangeServiceConfig2(
+            if (!NativeMethods.ChangeServiceConfig2(
                 service,
                 ServiceConfig2InfoLevel.SERVICE_CONFIG_FAILURE_ACTIONS,
-                failureActionsPtr.DangerousGetHandle());
-            if (changeResult == 0)
-                throw new Win32Exception();
+                failureActionsPtr.DangerousGetHandle()))
+            {
+                var err_code = Marshal.GetLastWin32Error();
+                throw new Win32Exception(err_code, $"ChangeServiceConfig2 failed with error {err_code}.");
+            }
         }
 
         [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]

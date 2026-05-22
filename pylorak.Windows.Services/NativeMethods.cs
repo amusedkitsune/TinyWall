@@ -29,7 +29,7 @@ namespace pylorak.Windows.Services
             string serviceName,
             ServiceAccessRights desiredAccess);
 
-        [DllImport("advapi32", SetLastError = true)]
+        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool QueryServiceConfig(
             SafeServiceHandle hService,
@@ -38,7 +38,7 @@ namespace pylorak.Windows.Services
             out uint pcbBytesNeeded);
 
         /*
-        [DllImport("advapi32.dll", SetLastError = true)]
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern int QueryServiceConfig2(
             IntPtr hService,
             ServiceConfig2InfoLevel dwInfoLevel,
@@ -62,8 +62,9 @@ namespace pylorak.Windows.Services
             string? lpPassword,
             string? lpDisplayName);
 
-        [DllImport("advapi32", SetLastError = true)]
-        public static extern int ChangeServiceConfig2(
+        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool ChangeServiceConfig2(
             SafeServiceHandle hService,
             ServiceConfig2InfoLevel dwInfoLevel,
             IntPtr lpInfo);

@@ -120,7 +120,7 @@ namespace pylorak.Windows.Services
         SC_ACTION_RUN_COMMAND = 0x00000003 // Run a command.
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct QUERY_SERVICE_CONFIG
     {
         internal uint dwServiceType;
@@ -153,17 +153,19 @@ namespace pylorak.Windows.Services
         internal uint dwServiceFlags;
     }
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct SERVICE_FAILURE_ACTIONS
     {
         internal uint dwResetPeriod;
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPTStr)]
         internal string? lpRebootMsg;
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPTStr)]
         internal string? lpCommand;
         internal uint cActions;
         internal IntPtr lpsaActions;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct SC_ACTION
     {
         internal SC_ACTION_TYPE Type;
@@ -233,7 +235,7 @@ namespace pylorak.Windows.Services
         public short Name;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct DEV_BROADCAST_DEVICEINTERFACE
     {
         public int Size;
@@ -251,7 +253,7 @@ namespace pylorak.Windows.Services
         DBTF_NET = 2
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct DEV_BROADCAST_VOLUME
     {
         public int Size;
