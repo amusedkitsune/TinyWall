@@ -75,29 +75,42 @@ namespace pylorak.Windows
             }
         }
 
-        private static bool WinVerEqOrGr(int major, int minor)
+        private static bool WinVerEqOrGr(int major, int minor, int build)
         {
-            var winVersion = new Version(major, minor, 0, 0);
+            var winVersion = new Version(major, minor, build, 0);
             return (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 && (Environment.OSVersion.Version >= winVersion);
         }
 
         private static string GetWindowsVersionString()
         {
+            const string UNKNOWN_RELEASE_STR = "????";
+
             Version winver = Environment.OSVersion.Version;
             try
             {
                 string product = RegistryHive.LocalMachine.GetReg64StrValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName") ?? "Windows ??";
-                string build = RegistryHive.LocalMachine.GetReg64StrValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuild") ?? "?????";
-                string bitness = Is64BitOs ? "64" : "32";
+                if (Win11OrNewer)
+                    product = product.Replace("Windows 10", "Windows 11");
 
-                string ret = $"{product} {bitness}-bit {winver.Major}.{winver.Minor}.{build}";
+                string releaseName = Win10OrNewer
+                    ? (winver.Build > 19042)
+                        ? RegistryHive.LocalMachine.GetReg64StrValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion") ?? UNKNOWN_RELEASE_STR
+                        : $"v{RegistryHive.LocalMachine.GetReg64StrValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId") ?? UNKNOWN_RELEASE_STR}"
+                    : string.Empty;
 
-                // TODO: releaseId is unreliable, use CurrentBuild or otherwise DisplayVersion reg values
-                string? releaseId = (winver.Major >= 10) ? RegistryHive.LocalMachine.GetReg64StrValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId") : null;
-                if (!string.IsNullOrEmpty(releaseId))
-                    ret += $" (v{releaseId})";
+                if (!string.IsNullOrEmpty(releaseName))
+                    product += $" {releaseName}";
 
+                string arch = RuntimeInformation.OSArchitecture switch
+                {
+                    Architecture.X86 => "x86",
+                    Architecture.X64 => "x64",
+                    Architecture.Arm64 => "arm64",
+                    _ => "unsupported arch"
+                };
+
+                string ret = $"{product} (build {winver.Build}) {arch}";
                 return ret;
             }
             catch
@@ -108,10 +121,11 @@ namespace pylorak.Windows
 
         public static Version LibraryVersion { get; } = typeof(VersionInfo).Assembly.GetName().Version;
 
-        public static bool Win7OrNewer { get; } = WinVerEqOrGr(6, 1);
-        public static bool Win8OrNewer { get; } = WinVerEqOrGr(6, 2);
-        public static bool Win81OrNewer { get; } = WinVerEqOrGr(6, 3);
-        public static bool Win10OrNewer { get; } = WinVerEqOrGr(10, 0);
+        public static bool Win7OrNewer { get; } = WinVerEqOrGr(6, 1, 0);
+        public static bool Win8OrNewer { get; } = WinVerEqOrGr(6, 2, 0);
+        public static bool Win81OrNewer { get; } = WinVerEqOrGr(6, 3, 0);
+        public static bool Win10OrNewer { get; } = WinVerEqOrGr(10, 0, 0);
+        public static bool Win11OrNewer { get; } = WinVerEqOrGr(10, 0, 2200);
 
         public static bool IsWow64Process { get; } = SafeNativeMethods.InternalCheckIsWow64();
         public static bool Is64BitProcess { get; } = (IntPtr.Size == 8);
