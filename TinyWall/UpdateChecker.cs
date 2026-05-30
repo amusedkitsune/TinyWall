@@ -67,7 +67,7 @@ namespace pylorak.TinyWall
                         UpdateThread.Abort();
                     break;
                 case (int)DialogResult.OK:
-                    updater.CheckVersion(descriptor);
+                    updater.CheckAppVersion(descriptor);
                     break;
                 case (int)DialogResult.Abort:
                     Utils.ShowMessageBox(updater.ErrorMsg, Resources.Messages.TinyWall, TaskDialogCommonButtons.Ok, TaskDialogIcon.Error);
@@ -75,11 +75,11 @@ namespace pylorak.TinyWall
             }
         }
 
-        private void CheckVersion(UpdateDescriptor descriptor)
+        private void CheckAppVersion(UpdateDescriptor descriptor)
         {
-            var UpdateModule = UpdateChecker.GetMainAppModule(descriptor)!;
-            var oldVersion = new Version(System.Windows.Forms.Application.ProductVersion);
-            var newVersion = new Version(UpdateModule.ComponentVersion);
+            var UpdateModule = descriptor.GetModule(UpdateDescriptor.MODULE_NAME_MAINBIN);
+            var oldVersion = new Version(Application.ProductVersion);
+            var newVersion = new Version(UpdateModule?.ComponentVersion ?? Application.ProductVersion);
 
             bool win10v1903 = VersionInfo.Win10OrNewer && (Environment.OSVersion.Version.Build >= 18362);
             bool WindowsNew_AnyTwUpdate = win10v1903 && (newVersion > oldVersion);
@@ -215,30 +215,6 @@ namespace pylorak.TinyWall
             {
                 File.Delete(tmpFile);
             }
-        }
-
-        internal static UpdateModule? GetUpdateModule(UpdateDescriptor descriptor, string moduleName)
-        {
-            for (int i = 0; i < descriptor.Modules.Length; ++i)
-            {
-                if (descriptor.Modules[i].Component.Equals(moduleName, StringComparison.InvariantCultureIgnoreCase))
-                    return descriptor.Modules[i];
-            }
-
-            return null;
-        }
-
-        internal static UpdateModule? GetMainAppModule(UpdateDescriptor descriptor)
-        {
-            return GetUpdateModule(descriptor, "TinyWall");
-        }
-        internal static UpdateModule? GetHostsFileModule(UpdateDescriptor descriptor)
-        {
-            return GetUpdateModule(descriptor, "HostsFile");
-        }
-        internal static UpdateModule? GetDatabaseFileModule(UpdateDescriptor descriptor)
-        {
-            return GetUpdateModule(descriptor, "Database");
         }
     }
 }

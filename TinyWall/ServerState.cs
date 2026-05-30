@@ -22,6 +22,10 @@ namespace pylorak.TinyWall
     [DataContract(Namespace = "TinyWall")]
     public class UpdateDescriptor : ISerializable<UpdateDescriptor>
     {
+        public const string MODULE_NAME_MAINBIN = "TinyWall";
+        public const string MODULE_NAME_HOSTS = "HostsFile";
+        public const string MODULE_NAME_DATABASE = "Database";
+
         [DataMember]
         public string MagicWord = "TinyWall Update Descriptor";
         [DataMember]
@@ -30,6 +34,17 @@ namespace pylorak.TinyWall
         public JsonTypeInfo<UpdateDescriptor> GetJsonTypeInfo()
         {
             return SourceGenerationContext.Default.UpdateDescriptor;
+        }
+
+        public UpdateModule? GetModule(string moduleName)
+        {
+            for (int i = 0; i < Modules.Length; ++i)
+            {
+                if (Modules[i].Component.Equals(moduleName, StringComparison.InvariantCultureIgnoreCase))
+                    return Modules[i];
+            }
+
+            return null;
         }
     }
 

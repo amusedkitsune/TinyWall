@@ -1091,10 +1091,8 @@ namespace pylorak.TinyWall
             }
         }
 
-#if !DEBUG
         private DateTime? LastUpdateCheck_ = null;
         private const string LastUpdateCheck_FILENAME = "updatecheck";
-
         private DateTime LastUpdateCheck
         {
             get
@@ -1143,23 +1141,11 @@ namespace pylorak.TinyWall
 
         private void UpdaterMethod()
         {
-            UpdateDescriptor? update = null; 
-            try
-            {
-                if (DateTime.Now - LastUpdateCheck >= TimeSpan.FromDays(2))
-                {
-                    LastUpdateCheck = DateTime.Now;
-                    update = UpdateChecker.GetDescriptor();
-                }
-            }
-            catch
-            {
-                // This is an automatic update check in the background.
-                // If we fail (for whatever reason, no internet, server down etc.),
-                // we fail silently.
-                return;
-            }
-
+            // This is an automatic update check in the background.
+            // If we fail (for whatever reason, no internet, server down etc.), do it silently.
+            UpdateDescriptor? update = null;
+            try { update = UpdateChecker.GetDescriptor(); }
+            catch { return; }
             if (update is null)
                 return;
 
@@ -1168,22 +1154,18 @@ namespace pylorak.TinyWall
 
             try
             {
-                UpdateModule? module = UpdateChecker.GetDatabaseFileModule(VisibleState.Update);
-                if (module is not null)
+                var hostsUpdate = update.GetModule(UpdateDescriptor.MODULE_NAME_HOSTS);
+                if (hostsUpdate is not null)
                 {
-                    if (!string.Equals(module.DownloadHash, Hasher.HashFile(DatabaseClasses.AppDatabase.DBPath), StringComparison.OrdinalIgnoreCase))
-                    {
-                        GetCompressedUpdate(module, DatabaseUpdateInstall);
-                    }
+                    if (!string.Equals(hostsUpdate.DownloadHash, HostsFileManager.GetHostsHash(), StringComparison.OrdinalIgnoreCase))
+                        GetCompressedUpdate(hostsUpdate, HostsUpdateInstall);
                 }
 
-                module = UpdateChecker.GetHostsFileModule(VisibleState.Update);
-                if (module is not null)
+                var databaseUpdate = update.GetModule(UpdateDescriptor.MODULE_NAME_DATABASE);
+                if (databaseUpdate is not null)
                 {
-                    if (!string.Equals(module.DownloadHash, HostsFileManager.GetHostsHash(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        GetCompressedUpdate(module, HostsUpdateInstall);
-                    }
+                    if (!string.Equals(databaseUpdate.DownloadHash, Hasher.HashFile(DatabaseClasses.AppDatabase.DBPath), StringComparison.OrdinalIgnoreCase))
+                        GetCompressedUpdate(databaseUpdate, DatabaseUpdateInstall);
                 }
             }
             catch (Exception e)
@@ -1205,7 +1187,11 @@ namespace pylorak.TinyWall
                 Utils.DecompressDeflate(tmpCompressedPath, tmpFile);
 
                 if (Hasher.HashFile(tmpFile).Equals(module.DownloadHash, StringComparison.OrdinalIgnoreCase))
+                {
+#if !DEBUG  // don't install anything during debug
                     installMethod(tmpFile);
+#endif
+                }
             }
             catch { }
             finally
@@ -1255,7 +1241,6 @@ namespace pylorak.TinyWall
             VisibleState.ClientNotifs.Add(msg);
             GlobalInstances.ServerChangeset = Guid.NewGuid();
         }
-#endif
 
         internal void TimerCallback(Object state)
         {
@@ -1542,13 +1527,12 @@ namespace pylorak.TinyWall
                             InstallFirewallRules();
                         }
 
-#if !DEBUG
                         // Check for updates once every 2 days
-                        if (ActiveConfig.Service.AutoUpdateCheck)
+                        if (ActiveConfig.Service.AutoUpdateCheck && (DateTime.Now - LastUpdateCheck >= TimeSpan.FromDays(2)))
                         {
+                            LastUpdateCheck = DateTime.Now;
                             UpdaterMethod();
                         }
-#endif
 
                         return args.CreateResponse();
                     }

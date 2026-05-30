@@ -400,17 +400,21 @@ namespace pylorak.TinyWall
             base.Dispose(disposing);
         }
 
-        private void VerifyUpdates()
+        private void UpdateTimerTick(object state)
         {
+            // This is an automatic update check in the background.
+            // If we fail (for whatever reason, no internet, server down etc.), do it silently.
             try
             {
-                UpdateDescriptor? descriptor = FirewallState.Update;
-                if (descriptor is not null)
+                if (ActiveConfig.Service.AutoUpdateCheck)
                 {
-                    UpdateModule MainAppModule = UpdateChecker.GetMainAppModule(descriptor)!;
-                    if (new Version(MainAppModule.ComponentVersion) > new Version(System.Windows.Forms.Application.ProductVersion))
+                    UpdateModule? MainAppModule = FirewallState.Update?.GetModule(UpdateDescriptor.MODULE_NAME_MAINBIN);
+                    if (MainAppModule is null)
+                        return;
+
+                    if (new Version(MainAppModule.ComponentVersion) > new Version(Application.ProductVersion))
                     {
-                        Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate(object o)
+                        Utils.Invoke(SyncCtx, (SendOrPostCallback)delegate (object o)
                         {
                             string prompt = string.Format(CultureInfo.CurrentCulture, pylorak.TinyWall.Resources.Messages.UpdateAvailableBubble, MainAppModule.ComponentVersion);
                             ShowBalloonTip(prompt, ToolTipIcon.Info, 5000, StartUpdate, MainAppModule.UpdateURL);
@@ -418,23 +422,7 @@ namespace pylorak.TinyWall
                     }
                 }
             }
-            catch
-            {
-                // This is an automatic update check in the background.
-                // If we fail (for whatever reason, no internet, server down etc.),
-                // we fail silently.
-            }
-        }
-
-        private void UpdateTimerTick(object state)
-        {
-            if (ActiveConfig.Service.AutoUpdateCheck)
-            {
-                ThreadPool.QueueUserWorkItem((WaitCallback)delegate (object dummy)
-                {
-                    VerifyUpdates();
-                });
-            }
+            catch { }
         }
 
         private void TrafficTimerTick(object? _)
