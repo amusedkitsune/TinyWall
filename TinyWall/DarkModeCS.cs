@@ -494,39 +494,35 @@ namespace DarkModeForms
             control.ControlAdded -= controlControlAdded; //prevent uncontrolled multiple addition
             control.ControlAdded += controlControlAdded;
 
-            string Mode = IsDarkMode ? "DarkMode_Explorer" : "ClearMode_Explorer";
-            SetWindowTheme(control.Handle, Mode, null); //<- Attempts to apply Dark Mode using Win32 API if available.
             var propBackColor = control.GetType().GetProperty("BackColor");
             bool backColorChangeAllowed = (propBackColor is not null) && ((Color)propBackColor.GetValue(control) != Color.Transparent);
             if (backColorChangeAllowed) control.GetType().GetProperty("BackColor").SetValue(control, OScolors.Control);
             control.GetType().GetProperty("ForeColor")?.SetValue(control, OScolors.TextActive);
 
             /* Here we Finetune individual Controls  */
-            if (control is Label lbl)
+            if ((control is Label lbl) && (control is not LinkLabel))
             {
                 if (backColorChangeAllowed) control.GetType().GetProperty("BackColor").SetValue(control, control.Parent.BackColor);
                 control.GetType().GetProperty("BorderStyle")?.SetValue(control, BorderStyle.None);
                 control.Paint += (sender, e) =>
                 {
-                    if (control.Enabled == false && IsDarkMode)
+                    if (IsDarkMode && backColorChangeAllowed)
                     {
                         e.Graphics.Clear(control.Parent.BackColor);
                         e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
 
-                        using (Brush B = new SolidBrush(control.ForeColor))
-                        {
-                            //StringFormat sf = lbl.CreateStringFormat();
-                            MethodInfo mi = lbl.GetType().GetMethod("CreateStringFormat", BindingFlags.NonPublic | BindingFlags.Instance);
-                            StringFormat sf = mi.Invoke(lbl, new object[] { }) as StringFormat;
-
-                            e.Graphics.DrawString(lbl.Text, lbl.Font, B, new PointF(1, 0), sf);
-                        }
+                        using var textBrush = new SolidBrush(control.Enabled ? control.ForeColor : Color.Gray);
+                        using var sf = new StringFormat(StringFormatFlags.NoWrap);
+                        sf.LineAlignment = StringAlignment.Center;
+                        e.Graphics.DrawString(lbl.Text, lbl.Font, textBrush, e.ClipRectangle, sf);
                     }
                 };
             }
             if (control is LinkLabel)
             {
-                control.GetType().GetProperty("LinkColor")?.SetValue(control, OScolors.AccentLight);
+                if (backColorChangeAllowed) control.GetType().GetProperty("BackColor").SetValue(control, control.Parent.BackColor);
+                control.GetType().GetProperty("BorderStyle")?.SetValue(control, BorderStyle.None);
+                control.GetType().GetProperty("LinkColor")?.SetValue(control, OScolors.TextInAccent);
                 control.GetType().GetProperty("VisitedLinkColor")?.SetValue(control, OScolors.Primary);
             }
             if (control is TextBox)
@@ -536,9 +532,7 @@ namespace DarkModeForms
             }
             if (control is NumericUpDown)
             {
-                //Mode = IsDarkMode ? "DarkMode_CFD" : "ClearMode_CFD";
-                Mode = IsDarkMode ? "DarkMode_ItemsView" : "ClearMode_ItemsView";
-                SetWindowTheme(control.Handle, Mode, null);
+                SetWindowTheme(control.Handle, IsDarkMode ? "DarkMode_ItemsView" : "ClearMode_ItemsView", null);
             }
             if (control is Button)
             {
@@ -570,8 +564,7 @@ namespace DarkModeForms
                 }
 
                 // Apply Windows Color Mode:
-                Mode = IsDarkMode ? "DarkMode_CFD" : "ClearMode_CFD";
-                SetWindowTheme(control.Handle, Mode, null);
+                SetWindowTheme(control.Handle, IsDarkMode ? "DarkMode_CFD" : "ClearMode_CFD", null);
             }
             if (control is Panel)
             {
@@ -748,9 +741,7 @@ namespace DarkModeForms
             {
                 var lView = control as ListView;
                 if (IsDarkMode) lView.GridLines = false;
-                //Mode = IsDarkMode ? "DarkMode_ItemsView" : "ClearMode_ItemsView";
-                Mode = IsDarkMode ? "DarkMode_Explorer" : "ClearMode_Explorer";
-                SetWindowTheme(control.Handle, Mode, null);
+                SetWindowTheme(control.Handle, IsDarkMode ? "DarkMode_Explorer" : "ClearMode_Explorer", null);
 
 
                 if (lView.View == View.Details)
@@ -760,51 +751,82 @@ namespace DarkModeForms
                     lView.OwnerDraw = true;
                     lView.DrawColumnHeader += (sender, e) =>
                     {
-                        //e.DrawDefault = true;
-                        //e.DrawBackground();
-                        //e.DrawText();
+                        using var backBrush = new SolidBrush(OScolors.Header);
+                        e.Graphics.FillRectangle(backBrush, e.Bounds);
+
+                        using var columnSeparatorPen = new Pen(Color.DimGray);
+                        e.Graphics.DrawLine(columnSeparatorPen, new Point(e.Bounds.Right-1, e.Bounds.Top), new Point(e.Bounds.Right-1, e.Bounds.Bottom));
 
                         //Draws the Column's Text
-                        using (SolidBrush backBrush = new SolidBrush(OScolors.Header))
+                        using (SolidBrush foreBrush = new SolidBrush(OScolors.TextActive))
                         {
-                            using (SolidBrush foreBrush = new SolidBrush(OScolors.TextActive))
-                            {
-                                using (var sf = new StringFormat())
-                                {
-                                    sf.Alignment = StringAlignment.Center;
-                                    e.Graphics.FillRectangle(backBrush, e.Bounds);
-                                    e.Graphics.DrawString(e.Header.Text, lView.Font, foreBrush, e.Bounds, sf);
-                                }
-                            }
+                            var textBounds = e.Bounds;
+                            textBounds.X += 4;
+
+                            using var sf = new StringFormat(StringFormatFlags.NoWrap);
+                            sf.Trimming = StringTrimming.EllipsisCharacter;
+                            sf.LineAlignment = StringAlignment.Center;
+                            e.Graphics.DrawString(e.Header.Text, lView.Font, foreBrush, textBounds, sf);
                         }
                     };
-                    lView.DrawItem += (sender, e) => { e.DrawDefault = true; };
+
                     lView.DrawSubItem += (sender, e) =>
                     {
-                        e.DrawDefault = true;
+                        bool isFirstRow = e.ItemIndex == 0;
+                        bool isFirstSubItem = e.ColumnIndex == 0;
+                        bool isLastSubItem = e.ColumnIndex == e.Item.SubItems.Count - 1;
 
-                        //IntPtr headerControl = GetHeaderControl(lView);
-                        //IntPtr hdc = GetDC(headerControl);
-                        //Rectangle rc = new Rectangle(
-                        //  e.Bounds.Right, //<- Right instead of Left - offsets the rectangle
-                        //  e.Bounds.Top,
-                        //  e.Bounds.Width,
-                        //  e.Bounds.Height
-                        //);
-                        //rc.Width += 200;
+                        var contentBounds = e.Bounds;
+                        contentBounds.X += 4;
+                        contentBounds.Width -= 8;
+                        var textBounds = contentBounds;
 
-                        //using (SolidBrush backBrush = new SolidBrush(OScolors.ControlLight))
-                        //{
-                        //	e.Graphics.FillRectangle(backBrush, rc);
-                        //}
+                        // Draw cell background
+                        var backColor =
+                            e.Item.Selected
+                            ? e.Item.ListView.Focused
+                                ? OScolors.AccentLight
+                                : OScolors.BackgroundLight
+                            : e.Item.BackColor;
+                        using (var backBrush = new SolidBrush(backColor))
+                        {
+                            e.Graphics.FillRectangle(backBrush, e.Bounds);
+                        }
 
-                        //ReleaseDC(headerControl, hdc);
+                        // Draw vertical separators
+                        e.Graphics.DrawLine(Pens.DimGray, new Point(e.Bounds.Right - 1, e.Bounds.Top), new Point(e.Bounds.Right - 1, e.Item.ListView.Bounds.Bottom));
 
+                        // Draw icon
+                        if (isFirstSubItem)
+                        {
+                            e.Graphics.DrawImage(e.Item.ImageList.Images[e.Item.ImageIndex], contentBounds.Location);
+                            textBounds.X += e.Item.ImageList.ImageSize.Width;
+                            textBounds.Width -= e.Item.ImageList.ImageSize.Width;
+                        }
+
+                        // Draw text
+                        using (var foreBrush = new SolidBrush(OScolors.TextActive))
+                        {
+                            using var sf = new StringFormat(StringFormatFlags.NoWrap);
+                            sf.Trimming = StringTrimming.EllipsisCharacter;
+                            sf.LineAlignment = StringAlignment.Center;
+                            e.Graphics.DrawString(e.SubItem.Text, lView.Font, foreBrush, textBounds, sf);
+                        }
+
+                        // Draw focus highlist
+                        if (e.ItemState.HasFlag(ListViewItemStates.Focused))
+                        {
+                            using var focusPen = new Pen(Brushes.LightGray, 1) { DashStyle = DashStyle.Dot };
+                            e.Graphics.DrawLine(focusPen, e.Bounds.Left+1, e.Bounds.Top+1, e.Bounds.Right-1, e.Bounds.Top+1);
+                            e.Graphics.DrawLine(focusPen, e.Bounds.Left+1, e.Bounds.Bottom-1, e.Bounds.Right-1, e.Bounds.Bottom-1);
+                            if (isFirstSubItem)
+                                e.Graphics.DrawLine(focusPen, e.Bounds.Left+1, e.Bounds.Top+1, e.Bounds.Left+1, e.Bounds.Bottom - 1);
+                            if (isLastSubItem)
+                                e.Graphics.DrawLine(focusPen, e.Bounds.Right-1, e.Bounds.Top+1, e.Bounds.Right-1, e.Bounds.Bottom - 1);
+                        }
                     };
 
-                    Mode = IsDarkMode ? "DarkMode_Explorer" : "ClearMode_Explorer";
-                    SetWindowTheme(control.Handle, Mode, null);
-
+                    // This makes sure unused header space after the last column is also painted
                     IntPtr headerHandle = GetHeaderControl(lView);
                     if (headerHandle != IntPtr.Zero)
                         SetWindowTheme(headerHandle, IsDarkMode ? "DarkMode_ItemsView" : "ItemsView", null);
@@ -1178,8 +1200,6 @@ namespace DarkModeForms
             */
             int[] DarkModeOn = IsDarkMode ? new[] { 0x01 } : new[] { 0x00 }; //<- 1=True, 0=False
             string Mode = IsDarkMode ? "DarkMode_Explorer" : "ClearMode_Explorer";
-
-            SetWindowTheme(control.Handle, Mode, null); //DarkMode_Explorer, ClearMode_Explorer, DarkMode_CFD, DarkMode_ItemsView,
 
             if (DwmSetWindowAttribute(control.Handle, (int)DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, DarkModeOn, 4) != 0)
                 DwmSetWindowAttribute(control.Handle, (int)DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE, DarkModeOn, 4);
