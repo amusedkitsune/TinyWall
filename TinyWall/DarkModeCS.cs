@@ -504,8 +504,9 @@ namespace DarkModeForms
             {
                 if (backColorChangeAllowed) control.GetType().GetProperty("BackColor").SetValue(control, control.Parent.BackColor);
                 control.GetType().GetProperty("BorderStyle")?.SetValue(control, BorderStyle.None);
-                control.Paint += (sender, e) =>
+                control.Paint += (sender, eargs) =>
                 {
+                    using var e = eargs;
                     if (IsDarkMode && backColorChangeAllowed)
                     {
                         e.Graphics.Clear(control.Parent.BackColor);
@@ -584,8 +585,9 @@ namespace DarkModeForms
             {
                 control.GetType().GetProperty("BackColor")?.SetValue(control, control.Parent.BackColor);
                 control.GetType().GetProperty("ForeColor")?.SetValue(control, OScolors.TextActive);
-                control.Paint += (sender, e) =>
+                control.Paint += (sender, eargs) =>
                 {
+                    using var e = eargs;
                     if (control.Enabled == false && IsDarkMode)
                     {
                         var radio = (sender as GroupBox);
@@ -660,8 +662,9 @@ namespace DarkModeForms
             {
                 control.GetType().GetProperty("BackColor")?.SetValue(control, control.Parent.BackColor);
                 control.ForeColor = control.Enabled ? OScolors.TextActive : OScolors.TextInactive;
-                control.Paint += (sender, e) =>
+                control.Paint += (sender, eargs) =>
                 {
+                    using var e = eargs;
                     if (control.Enabled == false && IsDarkMode)
                     {
                         var radio = (sender as CheckBox);
@@ -676,8 +679,9 @@ namespace DarkModeForms
             {
                 control.GetType().GetProperty("BackColor")?.SetValue(control, control.Parent.BackColor);
                 control.ForeColor = control.Enabled ? OScolors.TextActive : OScolors.TextInactive;
-                control.Paint += (sender, e) =>
+                control.Paint += (sender, eargs) =>
                 {
+                    using var e = eargs;
                     if (control.Enabled == false && IsDarkMode)
                     {
                         var radio = (sender as RadioButton);
@@ -863,8 +867,9 @@ namespace DarkModeForms
                 grid.GridColor = OScolors.Control;
 
                 //paint the bottom right corner where the scrollbars meet
-                grid.Paint += (sender, e) =>
+                grid.Paint += (sender, eargs) =>
                 {
+                    using var e = eargs;
                     DataGridView dgv = sender as DataGridView;
 
                     //get the value of dgv.HorizontalScrollBar protected property
@@ -1062,8 +1067,10 @@ namespace DarkModeForms
             {
                 _Control.GetType().GetProperty("BorderStyle")?.SetValue(_Control, BorderStyle.None);
                 _Control.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, _Control.Width, _Control.Height, Radius, Radius));
-                _Control.Paint += (sender, e) =>
+                _Control.Paint += (sender, eargs) =>
                 {
+                    using var e = eargs;
+
                     //base.OnPaint(e);
                     Graphics graph = e.Graphics;
 
