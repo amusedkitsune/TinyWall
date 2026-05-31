@@ -284,7 +284,6 @@ namespace DarkModeForms
         private WndProc newWndProcDelegate;
         private IntPtr formHandle;
         private bool applyingTheme; // Flag to prevent recursion
-        private bool isFormLoaded = false;
         #endregion
 
 
@@ -314,10 +313,7 @@ namespace DarkModeForms
                 if (value == _colorMode) return;
                 _colorMode = value;
                 ApplyColorMode();
-                if (isFormLoaded)
-                {
-                    ApplyTheme();
-                }
+                ApplyTheme();
             }
         }
 
@@ -365,12 +361,7 @@ namespace DarkModeForms
                     originalWndProc = SetWindowLongPtr(handleRef, GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(newWndProcDelegate));
                 };
             }
-            // This Fires after the normal 'Form_Load' event
-            _Form.Load += (sender, e) =>
-            {
-                ApplyTheme();
-                isFormLoaded = true;
-            };
+            ApplyTheme();
         }
         private void ApplyColorMode()
         {
