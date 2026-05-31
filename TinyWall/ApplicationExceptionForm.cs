@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Windows.Forms;
-using System.Reflection;
+﻿using DarkModeForms;
 using Microsoft.Samples.TaskDialog;
 using pylorak.Windows;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
+using System.Windows.Forms;
 
 namespace pylorak.TinyWall
 {
@@ -14,6 +15,7 @@ namespace pylorak.TinyWall
 
         private List<FirewallExceptionV3> TmpExceptionSettings = new();
         private readonly bool PreserveSettingsOnSubjectChange = false;
+        private readonly DarkModeCS DarkMode;
 
         internal List<FirewallExceptionV3> ExceptionSettings
         {
@@ -24,6 +26,7 @@ namespace pylorak.TinyWall
         {
             InitializeComponent();
             Utils.SetRightToLeft(this);
+            this.DarkMode = new(this) { ColorMode = DarkModeCS.DisplayMode.SystemDefault };
 
             try
             {

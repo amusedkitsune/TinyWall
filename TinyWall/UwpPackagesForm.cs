@@ -1,8 +1,9 @@
-﻿using System;
+﻿using DarkModeForms;
+using pylorak.Windows;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using pylorak.Windows;
 
 namespace pylorak.TinyWall
 {
@@ -10,11 +11,13 @@ namespace pylorak.TinyWall
     {
         private readonly List<UwpPackageList.Package> SelectedPackages = new ();
         private readonly Size IconSize = new ((int)Math.Round(16 * Utils.DpiScalingFactor), (int)Math.Round(16 * Utils.DpiScalingFactor));
+        private readonly DarkModeCS DarkMode;
 
         public UwpPackagesForm(bool multiSelect)
         {
             InitializeComponent();
             Utils.SetRightToLeft(this);
+            this.DarkMode = new(this) { ColorMode = DarkModeCS.DisplayMode.SystemDefault };
             this.listView.MultiSelect = multiSelect;
             this.Icon = Resources.Icons.firewall;
             this.btnOK.Image = GlobalInstances.ApplyBtnIcon;

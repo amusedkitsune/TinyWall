@@ -1,6 +1,7 @@
-﻿using System;
-using System.Drawing;
+﻿using DarkModeForms;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace pylorak.TinyWall
         private Thread? SearcherThread;
         private bool RunSearch;
         private Size IconSize = new ((int)Math.Round(16 * Utils.DpiScalingFactor), (int)Math.Round(16 * Utils.DpiScalingFactor));
+        private readonly DarkModeCS DarkMode;
 
         internal List<FirewallExceptionV3> SelectedExceptions { get; } = new List<FirewallExceptionV3>();
 
@@ -21,6 +23,7 @@ namespace pylorak.TinyWall
         {
             InitializeComponent();
             Utils.SetRightToLeft(this);
+            this.DarkMode = new(this) { ColorMode = DarkModeCS.DisplayMode.SystemDefault};
             this.IconList.ImageSize = IconSize;
             this.Icon = Resources.Icons.firewall;
             this.btnCancel.Image = GlobalInstances.CancelBtnIcon;

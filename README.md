@@ -9,9 +9,11 @@
   </p>
 </div>
 
-## About this repository
+## About
 
-This is the source code of TinyWall as found at its [website](https://tinywall.pados.hu). Upstream development is now largely inactive, but this repository is provided for anyone who would like to submit their own improvements or fork the project.
+TinyWall is a free, lightweight, and non-intrusive, secure by default firewall for Windows. Built to just simply sit in your system tray, quietly blocking any application you did not explicitly allow network access. TinyWall installs no kernel drivers, so it cannot negatively influence system stability. It also repects your privacy and collects absolutely no data about the user or their computer.
+
+This is the official source code of TinyWall as found at its [website](https://tinywall.pados.hu).
 
 ## How to build
 
@@ -23,7 +25,7 @@ This is the source code of TinyWall as found at its [website](https://tinywall.p
 
 ### To build the application
 
-1. Open the solution file in Visual Studio and compile the `TinyWall` project. The other projects referenced inside the solution need not be compiled separately as they will be statically compiled into the application.
+1. Open the solution file in Visual Studio and compile the `TinyWall` project. The other projects referenced inside the solution need not be built separately as they will be statically compiled into the application.
 1. Done.
 
 ### To update/build build the database of known applications
@@ -43,23 +45,27 @@ This is the source code of TinyWall as found at its [website](https://tinywall.p
 
 ## Contributing
 
-Please don't open issues for feature requests or bug reports. Any changes you'd like you will need to implement yourself. If you have improvements that you would like to integrate into TinyWall, please fork the repo and create a pull request.
+Feel free to open issues, feature- or pull-requests. I kindly ask for patience though, as TinyWall is in maintenance mode and my responses are often delayed. Nevertheless all issues and requests are looked at. 
 
+New features are more likely to get implemented if you provide the necessary code changes yourself. The process for that is the same as for most other projects here on GitHub, in short:
 1. Fork the Project
 1. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 1. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 1. Push to the Branch (`git push origin feature/AmazingFeature`)
-1. Open a Pull Request
+1. Open a Pull Request on GitHub
 
-For complex features or large changes, please contact me first if your changes are still within the scope of the application.
+For complex features or large changes, please contact me first if your changes are still within the vision of TinyWall staying small, efficient and simple.
 
-If you prefer that, you can also build and distribute your own version of the binaries. In this case though you need to choose a different name other than TinyWall for your application.
+If your goal with forking is not code contribution but to build and distribute your own binaries, please choose a name dissimilar to "TinyWall" to avoid confusing users.
 
 ## License
 
-- TaskDialog wrapper (contents of `Microsoft.Samples\TaskDialog\`) written by KevinGre ([link](https://www.codeproject.com/Articles/17026/TaskDialog-for-WinForms)) and placed under Public Domain.
-- Privilege token manipulation (contents of `Microsoft.Samples\Privilege.cs`) written by Mark Novak ([link](https://learn.microsoft.com/en-us/archive/msdn-magazine/2005/march/using-net-making-privileges-reliable-secure-and-efficient)) and subject to EULA adjacent to it.
-- All other code in the repository is under the GNU GPLv3 License. See `LICENSE.txt` for more information.
+| Contents in                     | Maintainer   | Origin                                                                                                                                | License                  |
+|---------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| Microsoft.Samples\TaskDialog\   | KevinGre     | [link](https://www.codeproject.com/Articles/17026/TaskDialog-for-WinForms)                                                            | Public Domain            |
+| Microsoft.Samples\Privilege.cs  | Mark Novak   | [link](https://learn.microsoft.com/en-us/archive/msdn-magazine/2005/march/using-net-making-privileges-reliable-secure-and-efficient)  | see Privilege.cs.LICENSE |
+| DarkModeCS.cs                   | BlueMystic   | [link](https://github.com/BlueMystical/Dark-Mode-Forms)                                                                               | MIT                      |
+| Everything else                 | Károly Pados | [this repo](https://github.com/pylorak/TinyWall)                                                                                      | GPLv3                    |
 
 ## Contact
 

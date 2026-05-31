@@ -2,6 +2,7 @@ TinyWall Changelog
 ---------------------
 
 3.x.x - Maintenance release (xx.03.2026.)
+- Add dark mode support for GUI
 - Add support for Windows on ARM devices
 - Don't create "All applications" rule if user does not select an application
 - Preserve other rule settings when editing application in an existing rule (pepak)

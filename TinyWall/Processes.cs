@@ -1,11 +1,12 @@
-﻿using System;
-using System.Drawing;
+﻿using DarkModeForms;
+using pylorak.Utilities;
+using pylorak.Windows;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Windows.Forms;
+using System.Drawing;
 using System.Linq;
-using pylorak.Windows;
-using pylorak.Utilities;
+using System.Windows.Forms;
 
 namespace pylorak.TinyWall
 {
@@ -14,11 +15,13 @@ namespace pylorak.TinyWall
         internal readonly List<ProcessInfo> Selection = new();
         private readonly AsyncIconScanner IconScanner;
         private readonly Size IconSize = new((int)Math.Round(16 * Utils.DpiScalingFactor), (int)Math.Round(16 * Utils.DpiScalingFactor));
+        private readonly DarkModeCS DarkMode;
 
         internal ProcessesForm(bool multiSelect)
         {
             InitializeComponent();
             Utils.SetRightToLeft(this);
+            this.DarkMode = new(this) { ColorMode = DarkModeCS.DisplayMode.SystemDefault };
             this.IconList.ImageSize = IconSize;
             this.listView.MultiSelect = multiSelect;
             this.Icon = Resources.Icons.firewall;

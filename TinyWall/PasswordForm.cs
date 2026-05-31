@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DarkModeForms;
+using System;
 using System.Windows.Forms;
 
 namespace pylorak.TinyWall
@@ -6,11 +7,13 @@ namespace pylorak.TinyWall
     internal partial class PasswordForm : Form
     {
         internal string PassHash { get; private set; } = string.Empty;
+        private readonly DarkModeCS DarkMode;
 
         internal PasswordForm()
         {
             InitializeComponent();
             Utils.SetRightToLeft(this);
+            this.DarkMode = new(this) { ColorMode = DarkModeCS.DisplayMode.SystemDefault };
             this.btnOK.Image = GlobalInstances.ApplyBtnIcon;
             this.btnCancel.Image = GlobalInstances.CancelBtnIcon;
         }

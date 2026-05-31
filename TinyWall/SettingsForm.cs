@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Drawing;
-using System.Windows.Forms;
+﻿using DarkModeForms;
 using pylorak.Utilities;
 using pylorak.Windows;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Windows.Forms;
 
 namespace pylorak.TinyWall
 {
@@ -34,6 +35,7 @@ namespace pylorak.TinyWall
         private readonly AsyncIconScanner IconScanner;
         private readonly List<ListViewItem> ExceptionItems = new();
         private readonly List<ListViewItem> FilteredExceptionItems = new();
+        private readonly DarkModeCS DarkMode;
         private bool LoadingSettings;
         private string? m_NewPassword;
         private Size IconSize = new((int)Math.Round(16 * Utils.DpiScalingFactor), (int)Math.Round(16 * Utils.DpiScalingFactor));
@@ -42,6 +44,7 @@ namespace pylorak.TinyWall
         {
             InitializeComponent();
             Utils.SetRightToLeft(this);
+            this.DarkMode = new(this) { ColorMode = DarkModeCS.DisplayMode.SystemDefault };
             this.IconList.ImageSize = IconSize;
             this.Icon = Resources.Icons.firewall;
             this.btnOK.Image = GlobalInstances.ApplyBtnIcon;
@@ -222,6 +225,9 @@ namespace pylorak.TinyWall
 
         private ListViewItem ListItemFromAppException(FirewallExceptionV3 ex, UwpPackageList packageList)
         {
+            Color deletedRowBackColor = DarkMode.IsDarkMode ? Color.Black : Color.LightGray;
+            Color blockedRowBackColor = DarkMode.IsDarkMode ? Color.IndianRed : Color.LightPink;
+
             var li = new ListViewItem() { Tag = ex };
 
             var exeSubj = ex.Subject as ExecutableSubject;
@@ -259,7 +265,7 @@ namespace pylorak.TinyWall
 
             if (ex.Policy.PolicyType == PolicyType.HardBlock)
             {
-                li.BackColor = Color.LightPink;
+                li.BackColor = blockedRowBackColor;
             }
 
             if (uwpSubj is not null)
@@ -267,7 +273,7 @@ namespace pylorak.TinyWall
                 if (!packageList.FindPackage(uwpSubj.Sid).HasValue)
                 {
                     li.ImageIndex = IconList.Images.IndexOfKey("deleted");
-                    li.BackColor = Color.LightGray;
+                    li.BackColor = deletedRowBackColor;
                 }
             }
 
@@ -294,7 +300,7 @@ namespace pylorak.TinyWall
                 else
                 {
                     li.ImageIndex = IconList.Images.IndexOfKey("deleted");
-                    li.BackColor = Color.LightGray;
+                    li.BackColor = deletedRowBackColor;
                 }
             }
 

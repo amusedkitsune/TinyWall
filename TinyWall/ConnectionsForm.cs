@@ -1,14 +1,15 @@
-﻿using System;
+﻿using DarkModeForms;
+using pylorak.Windows;
+using pylorak.Windows.NetStat;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Windows.Forms;
-using System.Drawing;
-using System.Linq;
-using pylorak.Windows;
-using pylorak.Windows.NetStat;
 
 namespace pylorak.TinyWall
 {
@@ -17,12 +18,14 @@ namespace pylorak.TinyWall
         private readonly TinyWallController Controller;
         private readonly AsyncIconScanner IconScanner;
         private readonly Size IconSize = new((int)Math.Round(16 * Utils.DpiScalingFactor), (int)Math.Round(16 * Utils.DpiScalingFactor));
+        private readonly DarkModeCS DarkMode;
         private bool EnableListUpdate = false;
 
         internal ConnectionsForm(TinyWallController ctrl)
         {
             InitializeComponent();
             Utils.SetRightToLeft(this);
+            this.DarkMode = new(this) { ColorMode = DarkModeCS.DisplayMode.SystemDefault };
             this.IconList.ImageSize = IconSize;
             this.Icon = Resources.Icons.firewall;
             this.Controller = ctrl;
