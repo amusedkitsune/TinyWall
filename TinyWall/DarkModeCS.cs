@@ -494,20 +494,6 @@ namespace DarkModeForms
             {
                 if (!isBackColorTransparent) control.BackColor = control.Parent.BackColor;
                 lbl.BorderStyle = BorderStyle.None;
-                control.Paint += (sender, eargs) =>
-                {
-                    using var e = eargs;
-                    if (IsDarkMode && !isBackColorTransparent)
-                    {
-                        e.Graphics.Clear(control.Parent.BackColor);
-                        e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
-
-                        using var textBrush = new SolidBrush(control.Enabled ? control.ForeColor : Color.Gray);
-                        using var sf = new StringFormat(StringFormatFlags.NoWrap);
-                        sf.LineAlignment = StringAlignment.Center;
-                        e.Graphics.DrawString(lbl.Text, lbl.Font, textBrush, e.ClipRectangle, sf);
-                    }
-                };
             }
             if (control is LinkLabel linkLbl)
             {
