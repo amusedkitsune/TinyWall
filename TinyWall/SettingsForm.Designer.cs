@@ -56,6 +56,8 @@
             this.listRecommendedGlobalProfiles = new System.Windows.Forms.CheckedListBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.comboUiTheme = new System.Windows.Forms.ComboBox();
+            this.label13 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.chkHostsBlocklist = new System.Windows.Forms.CheckBox();
             this.chkEnableBlocklists = new System.Windows.Forms.CheckBox();
@@ -91,8 +93,6 @@
             this.btnWeb = new System.Windows.Forms.Button();
             this.sfd = new System.Windows.Forms.SaveFileDialog();
             this.ofd = new System.Windows.Forms.OpenFileDialog();
-            this.label13 = new System.Windows.Forms.Label();
-            this.comboUiTheme = new System.Windows.Forms.ComboBox();
             this.tabPage3.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -317,6 +317,18 @@
             this.tableLayoutPanel1.Controls.Add(this.chkAutoUpdateCheck, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.chkAskForExceptionDetails, 0, 3);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            // 
+            // comboUiTheme
+            // 
+            resources.ApplyResources(this.comboUiTheme, "comboUiTheme");
+            this.comboUiTheme.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboUiTheme.FormattingEnabled = true;
+            this.comboUiTheme.Name = "comboUiTheme";
+            // 
+            // label13
+            // 
+            resources.ApplyResources(this.label13, "label13");
+            this.label13.Name = "label13";
             // 
             // label11
             // 
@@ -563,18 +575,6 @@
             // sfd
             // 
             this.sfd.DefaultExt = "xml";
-            // 
-            // label13
-            // 
-            resources.ApplyResources(this.label13, "label13");
-            this.label13.Name = "label13";
-            // 
-            // comboUiTheme
-            // 
-            resources.ApplyResources(this.comboUiTheme, "comboUiTheme");
-            this.comboUiTheme.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboUiTheme.FormattingEnabled = true;
-            this.comboUiTheme.Name = "comboUiTheme";
             // 
             // SettingsForm
             // 
