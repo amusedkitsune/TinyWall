@@ -559,7 +559,7 @@ namespace DarkModeForms
             {
                 control.BackColor = control.Parent.BackColor;
                 control.ForeColor = OScolors.TextActive;
-                control.Paint += (sender, eargs) =>
+                PaintEventHandler groupBoxPainteventHandler = (sender, eargs) =>
                 {
                     using var e = eargs;
                     if (control.Enabled == false && IsDarkMode)
@@ -569,6 +569,8 @@ namespace DarkModeForms
                         e.Graphics.DrawString(radio.Text, radio.Font, B, new PointF(6, 0));
                     }
                 };
+                control.Paint -= groupBoxPainteventHandler;
+                control.Paint += groupBoxPainteventHandler;
             }
             if (control is TableLayoutPanel tblLayoutPanel)
             {
@@ -580,7 +582,7 @@ namespace DarkModeForms
             {
                 tab.Appearance = TabAppearance.Normal;
                 tab.DrawMode = TabDrawMode.OwnerDrawFixed;
-                tab.DrawItem += (sender, e) =>
+                DrawItemEventHandler tabControlPaintEventHandelr = (sender, e) =>
                 {
                     //Draw the background of the main control
                     using (SolidBrush backColor = new SolidBrush(tab.Parent.BackColor))
@@ -613,6 +615,8 @@ namespace DarkModeForms
                         }
                     }
                 };
+                tab.DrawItem -= tabControlPaintEventHandelr;
+                tab.DrawItem += tabControlPaintEventHandelr;
             }
             //if (control is FlatTabControl)
             //{
@@ -633,7 +637,7 @@ namespace DarkModeForms
             {
                 control.BackColor = control.Parent.BackColor;
                 control.ForeColor = control.Enabled ? OScolors.TextActive : OScolors.TextInactive;
-                control.Paint += (sender, eargs) =>
+                PaintEventHandler checkBoxPaintEventHandler = (sender, eargs) =>
                 {
                     using var e = eargs;
                     if (control.Enabled == false && IsDarkMode)
@@ -643,12 +647,14 @@ namespace DarkModeForms
                         e.Graphics.DrawString(radio.Text, radio.Font, B, new PointF(16, 0));
                     }
                 };
+                control.Paint -= checkBoxPaintEventHandler;
+                control.Paint += checkBoxPaintEventHandler;
             }
             if (control is RadioButton)
             {
                 control.BackColor = control.Parent.BackColor;
                 control.ForeColor = control.Enabled ? OScolors.TextActive : OScolors.TextInactive;
-                control.Paint += (sender, eargs) =>
+                PaintEventHandler radioButtonPaintEventHandler = (sender, eargs) =>
                 {
                     using var e = eargs;
                     if (control.Enabled == false && IsDarkMode)
@@ -658,6 +664,8 @@ namespace DarkModeForms
                         e.Graphics.DrawString(radio.Text, radio.Font, B, new PointF(16, 0));
                     }
                 };
+                control.Paint -= radioButtonPaintEventHandler;
+                control.Paint += radioButtonPaintEventHandler;
             }
             if (control is MenuStrip mnuStrip)
             {
@@ -717,13 +725,13 @@ namespace DarkModeForms
                     //lView.BackColor = OScolors.Surface;
                     if (lView.Items.Count > 0) lView.Items[0].UseItemStyleForSubItems = false;
                     lView.OwnerDraw = true;
-                    lView.DrawColumnHeader += (sender, e) =>
+                    DrawListViewColumnHeaderEventHandler listViewDrawHeaderEventHandler = (sender, e) =>
                     {
                         using var backBrush = new SolidBrush(OScolors.Header);
                         e.Graphics.FillRectangle(backBrush, e.Bounds);
 
                         using var columnSeparatorPen = new Pen(Color.DimGray);
-                        e.Graphics.DrawLine(columnSeparatorPen, new Point(e.Bounds.Right-1, e.Bounds.Top), new Point(e.Bounds.Right-1, e.Bounds.Bottom));
+                        e.Graphics.DrawLine(columnSeparatorPen, new Point(e.Bounds.Right - 1, e.Bounds.Top), new Point(e.Bounds.Right - 1, e.Bounds.Bottom));
 
                         //Draws the Column's Text
                         using (SolidBrush foreBrush = new SolidBrush(OScolors.TextActive))
@@ -737,8 +745,10 @@ namespace DarkModeForms
                             e.Graphics.DrawString(e.Header.Text, lView.Font, foreBrush, textBounds, sf);
                         }
                     };
+                    lView.DrawColumnHeader -= listViewDrawHeaderEventHandler;
+                    lView.DrawColumnHeader += listViewDrawHeaderEventHandler;
 
-                    lView.DrawSubItem += (sender, e) =>
+                    DrawListViewSubItemEventHandler listViewDrawSubItemEventHandler = (sender, e) =>
                     {
                         bool isFirstRow = e.ItemIndex == 0;
                         bool isFirstSubItem = e.ColumnIndex == 0;
@@ -808,14 +818,16 @@ namespace DarkModeForms
                         if (e.ItemState.HasFlag(ListViewItemStates.Focused))
                         {
                             using var focusPen = new Pen(Brushes.LightGray, 1) { DashStyle = DashStyle.Dot };
-                            e.Graphics.DrawLine(focusPen, e.Bounds.Left+1, e.Bounds.Top+1, e.Bounds.Right-1, e.Bounds.Top+1);
-                            e.Graphics.DrawLine(focusPen, e.Bounds.Left+1, e.Bounds.Bottom-1, e.Bounds.Right-1, e.Bounds.Bottom-1);
+                            e.Graphics.DrawLine(focusPen, e.Bounds.Left + 1, e.Bounds.Top + 1, e.Bounds.Right - 1, e.Bounds.Top + 1);
+                            e.Graphics.DrawLine(focusPen, e.Bounds.Left + 1, e.Bounds.Bottom - 1, e.Bounds.Right - 1, e.Bounds.Bottom - 1);
                             if (isFirstSubItem)
-                                e.Graphics.DrawLine(focusPen, e.Bounds.Left+1, e.Bounds.Top+1, e.Bounds.Left+1, e.Bounds.Bottom - 1);
+                                e.Graphics.DrawLine(focusPen, e.Bounds.Left + 1, e.Bounds.Top + 1, e.Bounds.Left + 1, e.Bounds.Bottom - 1);
                             if (isLastSubItem)
-                                e.Graphics.DrawLine(focusPen, e.Bounds.Right-1, e.Bounds.Top+1, e.Bounds.Right-1, e.Bounds.Bottom - 1);
+                                e.Graphics.DrawLine(focusPen, e.Bounds.Right - 1, e.Bounds.Top + 1, e.Bounds.Right - 1, e.Bounds.Bottom - 1);
                         }
                     };
+                    lView.DrawSubItem -= listViewDrawSubItemEventHandler;
+                    lView.DrawSubItem += listViewDrawSubItemEventHandler;
 
                     // This makes sure unused header space after the last column is also painted
                     IntPtr headerHandle = GetHeaderControl(lView);
@@ -853,7 +865,7 @@ namespace DarkModeForms
                 grid.GridColor = OScolors.Control;
 
                 //paint the bottom right corner where the scrollbars meet
-                grid.Paint += (sender, eargs) =>
+                PaintEventHandler dataGridPaintEventHandler = (sender, eargs) =>
                 {
                     using var e = eargs;
                     DataGridView dgv = (DataGridView)sender;
@@ -876,6 +888,8 @@ namespace DarkModeForms
                         }
                     }
                 };
+                grid.Paint -= dataGridPaintEventHandler;
+                grid.Paint += dataGridPaintEventHandler;
 
                 grid.DefaultCellStyle.BackColor = OScolors.Surface;
                 grid.DefaultCellStyle.ForeColor = OScolors.TextActive;
@@ -1053,7 +1067,7 @@ namespace DarkModeForms
             {
                 _Control.GetType().GetProperty("BorderStyle")?.SetValue(_Control, BorderStyle.None);
                 _Control.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, _Control.Width, _Control.Height, Radius, Radius));
-                _Control.Paint += (sender, eargs) =>
+                PaintEventHandler roundBordersPaintEventHandler = (sender, eargs) =>
                 {
                     using var e = eargs;
 
@@ -1103,6 +1117,8 @@ namespace DarkModeForms
                         }
                     }
                 };
+                _Control.Paint -= roundBordersPaintEventHandler;
+                _Control.Paint += roundBordersPaintEventHandler;
             }
         }
 
