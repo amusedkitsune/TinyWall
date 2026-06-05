@@ -747,7 +747,6 @@ namespace DarkModeForms
                         var contentBounds = e.Bounds;
                         contentBounds.X += 4;
                         contentBounds.Width -= 8;
-                        var textBounds = contentBounds;
 
                         // Draw cell background
                         var backColor =
@@ -764,6 +763,19 @@ namespace DarkModeForms
                         // Draw vertical separators
                         e.Graphics.DrawLine(Pens.DimGray, new Point(e.Bounds.Right - 1, e.Bounds.Top), new Point(e.Bounds.Right - 1, e.Item.ListView.Bounds.Bottom));
 
+                        // Draw checkbox
+                        if (isFirstSubItem && lView.CheckBoxes)
+                        {
+                            var cbState = e.Item.Checked ? System.Windows.Forms.VisualStyles.CheckBoxState.CheckedNormal : System.Windows.Forms.VisualStyles.CheckBoxState.UncheckedNormal;
+                            var cbSize = SystemInformation.MenuCheckSize;
+                            int cbX = contentBounds.Left + 4;
+                            int cbY = contentBounds.Top + (contentBounds.Height - cbSize.Height) / 2;
+                            Rectangle cbRect = new Rectangle(cbX, cbY, cbSize.Width, cbSize.Height);
+                            CheckBoxRenderer.DrawCheckBox(e.Graphics, cbRect.Location, cbState);
+                            contentBounds.X += cbSize.Width + 4;
+                            contentBounds.Width -= cbSize.Width + 4;
+                        }
+
                         // Draw icon
                         if (isFirstSubItem)
                         {
@@ -778,8 +790,8 @@ namespace DarkModeForms
                                 if (img is not null)
                                     e.Graphics.DrawImage(img, contentBounds.Location);
 
-                                textBounds.X += e.Item.ImageList.ImageSize.Width;
-                                textBounds.Width -= e.Item.ImageList.ImageSize.Width;
+                                contentBounds.X += e.Item.ImageList.ImageSize.Width;
+                                contentBounds.Width -= e.Item.ImageList.ImageSize.Width;
                             }
                         }
 
@@ -789,10 +801,10 @@ namespace DarkModeForms
                             using var sf = new StringFormat(StringFormatFlags.NoWrap);
                             sf.Trimming = StringTrimming.EllipsisCharacter;
                             sf.LineAlignment = StringAlignment.Center;
-                            e.Graphics.DrawString(e.SubItem.Text, lView.Font, foreBrush, textBounds, sf);
+                            e.Graphics.DrawString(e.SubItem.Text, lView.Font, foreBrush, contentBounds, sf);
                         }
 
-                        // Draw focus highlist
+                        // Draw focus highlight
                         if (e.ItemState.HasFlag(ListViewItemStates.Focused))
                         {
                             using var focusPen = new Pen(Brushes.LightGray, 1) { DashStyle = DashStyle.Dot };
